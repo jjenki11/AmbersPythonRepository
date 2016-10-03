@@ -14,12 +14,15 @@ window.configure(background="powder blue")
 
 #   Define frames (containers)
 widget_input_container = Frame(window, height=125, width=350)
+
 number_container = Frame(widget_input_container, height=125, width=175)
 number_container_r1 = Frame(number_container, height=1, width=175)
 number_container_r2 = Frame(number_container, height=1, width=175)
 number_container_r3 = Frame(number_container, height=1, width=175)
 number_container_r4 = Frame(number_container, height=1, width=175)
+
 operation_container = Frame(widget_input_container, height=125, width=58)
+
 misc_container = Frame(widget_input_container, height=125, width=117)
 misc_container_r1 = Frame(misc_container, height=1, width=175)
 misc_container_r2 = Frame(misc_container, height=1, width=175)
@@ -27,7 +30,7 @@ misc_container_r3 = Frame(misc_container, height=1, width=175)
 misc_container_r4 = Frame(misc_container, height=1, width=175)
 
 evaluation_container = Frame(window, height=200, width=175)
-evaluation_container.pack(side=TOP)
+
 
 #   Define label to hold ongoing calculation
 answer_label = Label(evaluation_container, text="0", bg="powder blue")
@@ -37,6 +40,7 @@ class Expression(object):
     input_number_1 = 0
     input_number_2 = 0
     operator = None
+    #   Obligatory initialization
     def __init__(self):
         print("New expression created...")
     def set_input_1(self, num):
@@ -69,7 +73,7 @@ class Expression(object):
             print( result )
         else:
             #   This should kick us out before overwriting the inputs
-            print("bad expr.")
+            print("bad expression)
             return        
         self.input_number_1 = self.input_number_2
         self.operator = None
@@ -78,8 +82,9 @@ class Expression(object):
 
 #   Define operator class
 class Operators(object):
+    #   Obligatory initialization
     def __init__(self):
-        print("hi")
+        print("New Operator created...")
     def add(self, in1, in2):
         return in1+in2
     def subtract(self, in1, in2):
@@ -88,7 +93,7 @@ class Operators(object):
         return (in1*in2)
     def divide(self, in1, in2):
         return (in1/in2)    
-    #   TBD implement 
+    #   TBD impl
     #       square root 
     #       square value
     def square_root(self, in1):
@@ -123,6 +128,7 @@ def operator_callback(op):
         expr.set_operator(op)
         answer_label['text'] = 0
 
+#   This handles any key press (that has a standard unicode value) and performs proper action
 def keypress_callback(key):
     print("KEY is -> " + str(key.char))
     if(str(key.char).isdigit()):
@@ -149,17 +155,17 @@ def clear_callback(key):
         expr = None
         expr = Expression()
         
+#   Pretty self explanatory.
 def evaluate_callback(key):
     print("Returning your answer...")
     expr.set_input_2(float(answer_label.cget("text")))
-    if(expr.operator == "x*x"):        
+    #   If the expression is sqrt or square, then we only need the first input.
+    if((expr.operator == "x*x") or (expr.operator == u"\u221A")):        
         expr.evaluate_expression()
-    elif(expr.operator == u"\u221A"):
-        expr.evaluate_expression()
+    #   If the expression is anything else, set the 2nd input and then evaluate.
     else:
         expr.set_input_2(float(answer_label.cget("text")))
         expr.evaluate_expression()
-    
 
 #   Define buttons
 button_0 = Button(number_container_r4, text="0", height=1, width=3, bg="powder blue", command=lambda:number_callback(0))
@@ -178,15 +184,16 @@ button_divide = Button(operation_container, text="/", height=1, width=3, command
 button_multiply = Button(operation_container, text="x", height=1, width=3, command=lambda:operator_callback("*"))
 button_subtract = Button(operation_container, text="-", height=1, width=3, command=lambda:operator_callback("-"))
 button_add = Button(operation_container, text="+", height=1, width=3, command=lambda:operator_callback("+"))
-button_undo = Button(misc_container_r1, text="undo", height=1, width=5, state=DISABLED, command=lambda:operator_callback("undo"))   #disabled until implemented
+button_undo = Button(misc_container_r1, text="undo", height=1, width=5, state=DISABLED, command=lambda:operator_callback("undo"))   #TBD impl
 button_clear = Button(misc_container_r1, text="clear", height=1, width=5, command=lambda:operator_callback("clear"))
-button_Lparentheses = Button(misc_container_r2, text="(", height=1, width=5, state=DISABLED, command=lambda:operator_callback("("))   #disabled until implemented
-button_Rparentheses = Button(misc_container_r2, text=")", height=1, width=5, state=DISABLED, command=lambda:operator_callback(")"))   #disabled until implemented
+button_Lparentheses = Button(misc_container_r2, text="(", height=1, width=5, state=DISABLED, command=lambda:operator_callback("("))   #TBD impl
+button_Rparentheses = Button(misc_container_r2, text=")", height=1, width=5, state=DISABLED, command=lambda:operator_callback(")"))   #TBD impl
 button_square = Button(misc_container_r3, text="x*x", height=1, width=5, command=lambda:operator_callback("x*x"))
 button_root = Button(misc_container_r3, text=u"\u221A", height=1, width=5, command=lambda:operator_callback(u"\u221A"))
 button_equal = Button(misc_container_r4, text="=", height=1, width=15, command=lambda:operator_callback("="))
 
 #   Pack (bottom of tree) widgets
+evaluation_container.pack(side=TOP)
 answer_label.pack(side=LEFT)
 button_0.pack(side=LEFT)
 button_1.pack(side=LEFT)
