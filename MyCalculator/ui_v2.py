@@ -71,6 +71,10 @@ class Expression(object):
         elif(self.operator.find('u"\u221A"') != -1):
             result = math.square_value(self.input_number_1)
             print( result )
+        elif(self.operator.find('%') != -1):
+            #TBD impl
+            print("TBD implement percentage! result = (self.input_number_1 / 100)
+            result = 0
         else:
             #   This should kick us out before overwriting the inputs
             print("bad expression)
@@ -179,7 +183,7 @@ button_7 = Button(number_container_r1, text="7", height=1, width=3, command=lamb
 button_8 = Button(number_container_r1, text="8", height=1, width=3, command=lambda:number_callback(8))
 button_9 = Button(number_container_r1, text="9", height=1, width=3, command=lambda:number_callback(9))
 button_decimal = Button(number_container_r4, text=".", height=1, width=3, command=lambda:operator_callback("."))
-button_percent = Button(number_container_r4, text="%", height=1, width=3, command=lambda:operator_callback("%"))
+button_percent = Button(number_container_r4, text="%", height=1, width=3, command=lambda:operator_callback("%"))    #TBD impl
 button_divide = Button(operation_container, text="/", height=1, width=3, command=lambda:operator_callback("/"))
 button_multiply = Button(operation_container, text="x", height=1, width=3, command=lambda:operator_callback("*"))
 button_subtract = Button(operation_container, text="-", height=1, width=3, command=lambda:operator_callback("-"))
