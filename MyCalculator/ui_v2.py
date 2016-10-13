@@ -55,29 +55,31 @@ class Expression(object):
             result = math.subtract(self.input_number_1, self.input_number_2)
             print( result )
         elif(self.operator.find('*') != -1):
-            result = math.multiply(self.input_number_1, self.input_number_2) 
+            result = math.multiply(self.input_number_1, self.input_number_2)
             print( result )
         elif(self.operator.find('/') != -1):
             result = math.divide(self.input_number_1, self.input_number_2)
             print( result )
         elif(self.operator.find('x*x') != -1):
-            result = math.square_value(self.input_number_1)
+            result = self.input_number_1 ** 2 # self.input_number_1
             print( result )
         elif(self.operator.find('u"\u221A"') != -1):
-            result = math.square_value(self.input_number_1)
+            result = math.sqrt(self.input_number_1)
             print( result )
         elif(self.operator.find('%') != -1):
             #TBD impl
-            print("TBD implement percentage! result = (self.input_number_1 / 100)")
-            result = 0
+            result = (self.input_number_1 / 100)
+            print( result )
+            #"TBD implement percentage! result = (self.input_number_1 / 100)")
+            #result = 0
         else:
             #   This should kick us out before overwriting the inputs
             print("bad expression")
-            return        
+            return
         self.input_number_1 = self.input_number_2
         self.operator = None
         self.input_number_2 = None
-        answer_label['text'] = str(result)            
+        answer_label['text'] = str(result)
 
 #   Define operator class
 class Operators(object):
@@ -91,9 +93,9 @@ class Operators(object):
     def multiply(self, in1, in2):
         return (in1*in2)
     def divide(self, in1, in2):
-        return (in1/in2)    
+        return (in1/in2)
     #   TBD impl
-    #       square root 
+    #       square root
     #       square value
     def square_root(self, in1):
         return math.sqrt(in1)
@@ -110,7 +112,7 @@ def number_callback(num):
         curr_label = answer_label.cget("text")
         curr_label = str(curr_label) + str(num)
         answer_label['text'] = curr_label
-            
+
     #   Define operator callback
 def operator_callback(op):
     print("OPERATOR = " + op)
@@ -118,7 +120,7 @@ def operator_callback(op):
         print("CLEAR called.")
         clear_callback(None)
     elif(op == "undo"):
-        print("UNDO called.")    
+        print("UNDO called.")
     else:
         #this is where the arithmetic is done.
         expr.set_input_1(float(answer_label.cget("text")))
@@ -146,12 +148,17 @@ def clear_callback(key):
         answer_label['text'] = "0"
         expr = None
         expr = Expression()
-        
+
+def undo(self):
+    self.txt=self.e.get()[:-1]
+    self.e.delete(0,END)
+    self.e.insert(0,self.txt)
+
 #   Pretty self explanatory.
 def evaluate_callback(key):
     expr.set_input_2(float(answer_label.cget("text")))
     #   If the expression is sqrt or square, then we only need the first input.
-    if((expr.operator == "x*x") or (expr.operator == u"\u221A")):        
+    if((expr.operator == "x*x") or (expr.operator == u"\u221A")):
         expr.evaluate_expression()
     #   If the expression is anything else, set the 2nd input and then evaluate.
     else:
@@ -164,7 +171,7 @@ evaluation_container.pack(side=TOP)
 answer_label.pack(side=LEFT)
 
 #   Define and pack buttons
-button_0 = Button(number_container_r4, text="0", height=1, width=3, bg="powder blue", command=lambda:number_callback(0)).pack(side=LEFT)
+button_0 = Button(number_container_r4, text="0", height=1, width=3, command=lambda:number_callback(0)).pack(side=LEFT)
 button_1 = Button(number_container_r3, text="1", height=1, width=3, command=lambda:number_callback(1)).pack(side=LEFT)
 button_2 = Button(number_container_r3, text="2", height=1, width=3, command=lambda:number_callback(2)).pack(side=LEFT)
 button_3 = Button(number_container_r3, text="3", height=1, width=3, command=lambda:number_callback(3)).pack(side=LEFT)
