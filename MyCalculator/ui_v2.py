@@ -4,13 +4,17 @@
 #   Adding import statements
 from Tkinter import *
 #   for sqrt
-import math
+import math as mth
+# for hex2rgb
+import struct
+
 #   Construct the window
 window = Tk()
 #   Set the window's title
 window.title("Calculator")
 window.geometry("325x350")
-window.configure(background="powder blue")
+mycolor = '#%02x%02x%02x' % (64, 204, 208)
+window.configure(background=mycolor)
 
 #   Define frames (containers)
 widget_input_container = Frame(window, height=125, width=350)
@@ -28,7 +32,20 @@ misc_container_r4 = Frame(misc_container, height=1, width=175)
 evaluation_container = Frame(window, height=200, width=175)
 
 #   Define label to hold ongoing calculation
-answer_label = Label(evaluation_container, text="0", bg="powder blue")
+answer_label = Label(evaluation_container, text="0", bg="white")
+
+def color_change(channel, inputs):
+    current_rgb = math.hex2rgb(window["background"])
+    print (window["background"])
+    if (channel == "red"):
+        current_rgb[0] = inputs
+    elif (channel == "green"):
+        current_rgb[1] = inputs
+    else:
+        current_rgb[2] = inputs
+    mycolor = str(math.rgb2hex(current_rgb[0],current_rgb[1],current_rgb[2]))
+    window.configure(background=mycolor)
+
 
 #   Define expression class to hold input(s) and operation prior to evaluation.
 class Expression(object):
@@ -60,18 +77,15 @@ class Expression(object):
         elif(self.operator.find('/') != -1):
             result = math.divide(self.input_number_1, self.input_number_2)
             print( result )
-        elif(self.operator.find('x*x') != -1):
-            result = self.input_number_1 ** 2 # self.input_number_1
+        elif(self.operator.find('^') != -1):
+            result = math.square_value(self.input_number_1) # self.input_number_1
             print( result )
-        elif(self.operator.find('u"\u221A"') != -1):
-            result = math.sqrt(self.input_number_1)
+        elif(self.operator.find("sqrt") != -1):
+            result = mth.sqrt(self.input_number_1)
             print( result )
         elif(self.operator.find('%') != -1):
-            #TBD impl
             result = (self.input_number_1 / 100)
             print( result )
-            #"TBD implement percentage! result = (self.input_number_1 / 100)")
-            #result = 0
         else:
             #   This should kick us out before overwriting the inputs
             print("bad expression")
@@ -80,6 +94,7 @@ class Expression(object):
         self.operator = None
         self.input_number_2 = None
         answer_label['text'] = str(result)
+        color_change("red", result)
 
 #   Define operator class
 class Operators(object):
@@ -94,13 +109,28 @@ class Operators(object):
         return (in1*in2)
     def divide(self, in1, in2):
         return (in1/in2)
-    #   TBD impl
-    #       square root
-    #       square value
     def square_root(self, in1):
-        return math.sqrt(in1)
+        return mth.sqrt(in1)
     def square_value(self, in1):
         return (in1 * in1)
+    def dimensions_convert(self, oldR, newR, oldV):
+        oldRdiff = oldR["max"] - oldR["min"]
+        newRdiff = newR["max"] - newR["min"]
+        NewV = (((oldV-oldR["min"])*newRdiff)/oldRdiff)+newR["min"]
+        return NewV
+    def hex2rgb (self, hexv):
+        hexv = hexv.lstrip('#')
+        p = str(struct.unpack('BBB',hexv.decode('hex')))
+        p = p.replace('(', '').replace(')', '').replace(' ', '')
+        a = p.split(",")
+        result = map(int, a)
+        print (result)
+        return (result)
+        #hlen = len(hexv)
+        #return tuple(int(hexv[i:i+hlen/3], 16) for i in (0, hlen ,hlen/3))
+    def rgb2hex (self, r, g, b):
+        mycolor = '#%02x%02x%02x' % (r, g, b)
+        return mycolor
 
 #   DEFINE INPUT HANDLERS
     #   Define number callback
@@ -121,11 +151,24 @@ def operator_callback(op):
         clear_callback(None)
     elif(op == "undo"):
         print("UNDO called.")
+    elif(op == "="):
+        evaluate_callback(op)
     else:
         #this is where the arithmetic is done.
         expr.set_input_1(float(answer_label.cget("text")))
         expr.set_operator(op)
         answer_label['text'] = 0
+
+def motion(event):
+    x, y = event.x, event.y
+    w_x,w_y = window.winfo_width(), window.winfo_height()
+    print('{}, {}'.format(x, y))
+    b = abs(math.dimensions_convert({"min":0, "max":w_x}, {"min":0, "max":255}, x))
+    g = abs(math.dimensions_convert({"min":0, "max":w_y}, {"min":0, "max":255}, y))
+    print ("b color is "+str(b)+ ", g color is " + str(g))
+    #print (math.hex2rgb(window["background"]))
+    color_change("blue", b)
+    color_change("green", g)
 
 #   This handles any key press (that has a standard unicode value) and performs proper action
 def keypress_callback(key):
@@ -149,16 +192,11 @@ def clear_callback(key):
         expr = None
         expr = Expression()
 
-def undo(self):
-    self.txt=self.e.get()[:-1]
-    self.e.delete(0,END)
-    self.e.insert(0,self.txt)
-
 #   Pretty self explanatory.
 def evaluate_callback(key):
     expr.set_input_2(float(answer_label.cget("text")))
     #   If the expression is sqrt or square, then we only need the first input.
-    if((expr.operator == "x*x") or (expr.operator == u"\u221A")):
+    if((expr.operator == "x^2") or (expr.operator == "sqrt")):
         expr.evaluate_expression()
     #   If the expression is anything else, set the 2nd input and then evaluate.
     else:
@@ -184,15 +222,15 @@ button_9 = Button(number_container_r1, text="9", height=1, width=3, command=lamb
 button_decimal = Button(number_container_r4, text=".", height=1, width=3, command=lambda:operator_callback(".")).pack(side=LEFT)
 button_percent = Button(number_container_r4, text="%", height=1, width=3, command=lambda:operator_callback("%")).pack(side=LEFT)   #TBD impl
 button_divide = Button(operation_container, text="/", height=1, width=3, command=lambda:operator_callback("/")).pack()
-button_multiply = Button(operation_container, text="x", height=1, width=3, command=lambda:operator_callback("*")).pack()
+button_multiply = Button(operation_container, text="*", height=1, width=3, command=lambda:operator_callback("*")).pack()
 button_subtract = Button(operation_container, text="-", height=1, width=3, command=lambda:operator_callback("-")).pack()
 button_add = Button(operation_container, text="+", height=1, width=3, command=lambda:operator_callback("+")).pack()
 button_undo = Button(misc_container_r1, text="undo", height=1, width=5, state=DISABLED, command=lambda:operator_callback("undo")).pack(side=LEFT)   #TBD impl
 button_clear = Button(misc_container_r1, text="clear", height=1, width=5, command=lambda:operator_callback("clear")).pack(side=LEFT)
 button_Lparentheses = Button(misc_container_r2, text="(", height=1, width=5, state=DISABLED, command=lambda:operator_callback("(")).pack(side=LEFT)   #TBD impl
 button_Rparentheses = Button(misc_container_r2, text=")", height=1, width=5, state=DISABLED, command=lambda:operator_callback(")")).pack(side=LEFT)   #TBD impl
-button_square = Button(misc_container_r3, text="x*x", height=1, width=5, command=lambda:operator_callback("x*x")).pack(side=LEFT)
-button_root = Button(misc_container_r3, text=u"\u221A", height=1, width=5, command=lambda:operator_callback(u"\u221A")).pack(side=LEFT)
+button_square = Button(misc_container_r3, text="x^2", height=1, width=5, command=lambda:operator_callback("x^2")).pack(side=LEFT)
+button_root = Button(misc_container_r3, text="sqrt", height=1, width=5, command=lambda:operator_callback("sqrt")).pack(side=LEFT)
 button_equal = Button(misc_container_r4, text="=", height=1, width=15, command=lambda:operator_callback("=")).pack(side=LEFT)
 
 #   Pack (next to higher levels of widget tree) widgets
@@ -215,6 +253,8 @@ window.bind("<Delete>", clear_callback)
 #   these are the shortcut keys to evaluate the expression
 window.bind("<Return>", evaluate_callback)
 window.bind("<KP_Enter>", evaluate_callback)
+#   listens for mouse actions
+window.bind('<Motion>', motion)
 
 #   These are the 'worker' classes that we will eventually  move into their own file(s).
 math = Operators()
